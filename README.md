@@ -2,7 +2,7 @@
 
 ## Team Members
 
-Patrick Ayers and Zack Larson
+Patrick  and Zack 
 
 ## Project OverView
 
