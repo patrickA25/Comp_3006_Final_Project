@@ -1,10 +1,14 @@
-# Comp_3006_Final_Project
+# Final Project Proposa
 
-## Team Members
+## Group Members
+*Patrick Ayers
+*Zackary Larson
 
-Patrick  and Zack 
+## Analysis Objective
+Using NASA API to bring in data, and show some creat graphs
 
-## Project OverView
+## Dataypes that will be utilized
+* Dataset 1 -> API
+* Dataset 2 -> flat file
 
-It sounds like we will be doing somthing with NASA data sets
-
+## Protenal packages we will explore
