@@ -12,3 +12,8 @@ Using NASA API to bring in data, and show some creat graphs
 * Dataset 2 -> flat file
 
 ## Protenal packages we will explore
+* dotenv module - for storing API keys, and other personal information in a hidden\\
+.env file.
+
+* Request module - For pulling data from NASA website.
+
