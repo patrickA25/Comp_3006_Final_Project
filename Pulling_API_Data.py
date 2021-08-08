@@ -2,13 +2,12 @@
 import os
 import requests
 from dotenv import load_dotenv
-load_dotenv()
 
+
+#Getting API keys 
+load_dotenv()
 API_KEY_NASA = os.getenv("API_KEY_NASA")
 API_KEY_NOAA = os.getenv("API_KEY_NOAA")
-
-#print(API_KEY_NASA)
-#print(API_KEY_NOAA)
 
 #API key can be found by Going to the NASA data website and applying for one.
 respones = requests.get(f'https://api.nasa.gov/planetary/apod?api_key={API_KEY_NASA}')
