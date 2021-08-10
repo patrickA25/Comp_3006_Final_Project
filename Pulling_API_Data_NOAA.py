@@ -2,6 +2,7 @@
 import os
 import requests
 import datetime as datetime
+import collections as collection
 import json
 from dotenv import load_dotenv
 
@@ -10,26 +11,32 @@ from dotenv import load_dotenv
 #Getting API keys 
 load_dotenv()
 API_KEY_NOAA = os.getenv("API_KEY_NOAA")
-Token = API_KEY_NOAA
-#Station ID for Denver CO
-Stat_ID = 'GHCND:USW00023129'
-#GHCND => Global Histoical Climatology network Daily
-dataset_id = 'GHCND'
-#TAVG => average temperature
-datatype_id = 'TAVG'
-#number of rows returned, defualt is 25 max is 1000
-limit = 100
-#start and end date
-year = '2015'
+
+avg_temp_by_day = collection.namedtuple('AvgTempDay',('Location_name','Day','Avg_temp'))
 
 #build the URL for getting data:
+#Break down of URL sections
+#https://www.ncdc.noaa.gov/cdo-web/api/v2/data? => static needs to be in every API call
+#Datasetid=GHCND => this is the data base that the API will be calling
+#datatypedi => this is that column of data that it will be returning
+#limit = 1000 => the number of observation it will at most return
+#units => for average temp will it be returned in F or C 
+#stationid => the weather station ID value to pull data from
+#start_date/end_date => start and end date of when to pull data from
 
-r = requests.get('https://www.ncdc.noaa.gov/cdo-web/api/v2/data?datasetid=GHCND&datatypeid=TAVG&limit=1000&stationid=GHCND:USW00023129&startdate='+year+'-01-01&enddate='+year+'-01-31', headers={'token':Token})
+
+r = requests.get('https://www.ncdc.noaa.gov/cdo-web/api/v2/data?datasetid=GHCND&datatypeid=TAVG&limit=1000&units=standard&stationid=GHCND:USW00023129&startdate=2015-01-01&enddate=2015-01-31', headers={'token':API_KEY_NOAA})
 print(r.status_code)
 
 d = json.loads(r.text)
+
+dates_temp = []
+temps = []
 avg_temps = [item for item in d['results'] if item['datatype']=='TAVG']
-print(avg_temps)
+dates_temp += [item['date'] for item in avg_temps]
+temps += [item['value'] for item in avg_temps]
+
+print(temps)
 
 
 
