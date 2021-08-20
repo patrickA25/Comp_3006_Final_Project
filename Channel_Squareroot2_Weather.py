@@ -95,14 +95,8 @@ class Curiosity_Data():
     def __process_data(self):
         
         season_dict = {'Winter': {'first': '12-01', 'last': '02-28'}, 'Spring': {'first': '03-01', 'last': '05-31'}, 'Summer': {'first': '06-01', 'last': '08-31'}, 'Fall': {'first': '07-01', 'last': '11-30'}}
-
-        first_day = str(str(self.year) + '-' + season_dict[self.season]['first'])
-        first_day_dt = datetime.date.fromisoformat(first_day)
-        last_day = str(str(self.year + 1) + '-' + season_dict[self.season]['last']) if self.season == 'Winter' else str(str(self.year) + '-' + season_dict[self.season]['last'])
-        last_day_dt = datetime.date.fromisoformat(last_day)
-
-        print(first_day)
-        print(last_day)
+        first_day_dt = datetime.date.fromisoformat(str(str(self.year) + '-' + season_dict[self.season]['first']))
+        last_day_dt = datetime.date.fromisoformat(str(str(self.year + 1) + '-' + season_dict[self.season]['last']) if self.season == 'Winter' else str(str(self.year) + '-' + season_dict[self.season]['last']))
 
         mars_record = collection.namedtuple('mars_record', 'earth_date, sol, season, min_temp, max_temp, ave_temp, atmo_opacity, pressure, sunrise, sunset, daylight')
         ave_min = statistics.mean([int(sol['min_temp']) for sol in self.sol_data if sol['min_temp'] != '--'])
@@ -131,7 +125,6 @@ class Curiosity_Data():
 
             if first_day_dt <= earth_date_datetime <= last_day_dt: # Filter by date/season
                 self.curiosity_data.append(mars_record(earth_date_datetime, int(sol['sol']), sol['season'], int(sol['min_temp']), int(sol['max_temp']), int((int(sol['min_temp'])+int(sol['max_temp']))/2), sol['atmo_opacity'], int(sol['pressure']), sunrise_datetime, sunset_datetime, daylight))
-            #print(self.curiosity_data)
     
     def __explore_data(self):
 # ~~~~~~~~~~~~~~~~~~~~~~~~~ NEED TO FINISH ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -155,7 +148,6 @@ class Root_Two_Report(): # All humans are vermin in the eyes of Morbo...
         self.__export_data()
 
     def __merge_data(self):
-        #earth_record = collection.namedtuple('earth_record', 'earth_date, earth_season, earth_min, earth_max')
 
         for data in self.earth_data:
             self.earth_mars_data[data[0]]['earth_min'] = data[1]
@@ -164,9 +156,6 @@ class Root_Two_Report(): # All humans are vermin in the eyes of Morbo...
         for data in self.mars_data.curiosity_data:
             self.earth_mars_data[data.earth_date]['mars_min'] = data.min_temp
             self.earth_mars_data[data.earth_date]['mars_max'] = data.max_temp
-        #
-        # for data in self.earth_mars_data:
-        #print(self.earth_mars_data)
 
     def __export_data(self):
         field_names = ['date', 'earth_min', 'earth_max', 'mars_min', 'mars_max']
