@@ -1,5 +1,6 @@
 from logging import error
 import os
+import argparse
 import requests
 import datetime
 import json
@@ -18,19 +19,20 @@ API_URL_CURIOSITY = os.getenv("CURIOSITY_API")
 
 # Earth-related classes
 class NOAA_Data():
-
-    def __init__(self,year,location,season):
+    def __init__(self, year , location , season , explore ):
         self.year = str(year)
         self.location = str(location)
         self.season = str(season)
         self.__build_API_Call()
         self.__extracting_data()
+
+        if self.explore == True:
+            self.explor_graph()
         
     def __build_API_Call(self):
         if self.season == 'Spring':
             #Spring start =>'-3-1' Spring_end=>'-5-31'
-            self.API_call = f'''https://www.ncdc.noaa.gov/cdo-web/api/v2/data?datasetid=GHCND&datatypeid=TMAX&datatypeid=TMIN&limit=1000&
-            units=metric&stationid=GHCND:{self.location}&startdate={self.year}-03-01&enddate={self.year}-05-31'''
+            self.API_call = f'''https://www.ncdc.noaa.gov/cdo-web/api/v2/data?datasetid=GHCND&datatypeid=TMAX&datatypeid=TMIN&limit=1000& units=metric&stationid=GHCND:{self.location}&startdate={self.year}-03-01&enddate={self.year}-05-31'''
         elif self.season == 'Summer':
             #Spring start =>'-6-1' Spring_end=>'-8-31'
             self.API_call = f'''https://www.ncdc.noaa.gov/cdo-web/api/v2/data?datasetid=GHCND&datatypeid=TMAX&datatypeid=TMIN&limit=1000&units=standard&stationid=GHCND:{self.location}&startdate={self.year}-06-01&enddate={self.year}-08-31'''
@@ -65,10 +67,6 @@ class NOAA_Data():
         plt.plot(self.date_array,self.avg_array,label ='Avg Temp')
         plt.legend()
         plt.show()
-    
-    def CSV_output(self):
-        pass
-
 
 # Mars-related classes
 class Curiosity_Data():
@@ -220,9 +218,59 @@ class Root_Two_Report(): # All humans are vermin in the eyes of Morbo...
         plt.show()
 
 
-cData = Curiosity_Data(2020, 'Summer', False)
-test_data_pull = NOAA_Data(2017,'USW00003167','Summer')
-#for data in cData.curiosity_data:
-    #print(data.min_temp)
+def main():    
+    #adding command line arguments
+    parser = argparse.ArgumentParser(prog='Weather informaiton gather', 
+                                    description='''Comparing weather data from a city on Earth to weather data from Mars.You will need
+                                    to secelct a Season, year and a city to compare data from. A full list is cities and years are given
+                                    for each respective argument.''')
 
-Root_Two_Report(test_data_pull, cData, False, False)
+    parser.add_argument("year",type = str, metavar = "<year>", help = "Please chose one of the following 2017,2018,2019,2020,2021",
+                        choices = ["2017","2018","2019","2020","2021"])
+
+    parser.add_argument('-c',dest = 'e_location',metavar = '<Earth City>',
+                        type = str, default = "LA",
+                        help ='''Please choise one of the following cities LA ,DN, NY, TX, FL.If a city is not selected default will be LA''',
+                        choices = ["LA","DN","NY","TX","FL"])
+
+    parser.add_argument('-s',dest = 'season',metavar = '<Earth Season>',
+                        type = str, default = "Spring",
+                        help = "Please chose one of the following seasons Spring, Summer, Fall Winter. If a sesason is not selected defualt is Spring",
+                        choices = ["Spring","Summer","Fall","Winter"])
+    
+    parser.add_argument('-e',dest= 'explore_graph',action='store_true',
+                        help = "If you would like to see the exploratory graphs")
+
+    parser.add_argument('-w',dest= 'write_csv', action='store_true',
+                        help = 'If you would like to exprot a CSV')
+    
+    run( parser.parse_args())
+
+def run(args):
+    city_value = ""
+    if args.e_location == "LA":
+        #GHCND:USW00003167
+        city_value = 'USW00003167'
+    elif args.e_location == "DN":
+        #GHCND:USC00052223
+        city_value = "USC00052223"
+    elif args.e_location == "NY":
+        #GHCND:USW00094789
+        city_value = "USW00094789"
+    elif args.e_location == "TX":
+        #GHCND:USW00013958
+        city_value = "USW00013958"
+    elif args.e_location == "FL":
+        #GHCND:USW00012815
+        city_value = "USW00012815"
+    else:
+        raise ValueError('City value not valied, please look into this.')
+
+    #Pulling in data section
+    earth_data = NOAA_Data(args.year,city_value,args.season,args.explore_graph)
+    mars_data = Curiosity_Data(args.year,args.season,args.explore_graph)
+    Root_Two_Report(earth_data,mars_data,args.explore_graph,args.write_csv)
+
+
+if __name__=="__main__":
+    main()
