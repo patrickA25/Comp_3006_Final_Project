@@ -73,33 +73,34 @@ class NOAA_Data():
 # Mars-related classes
 class Curiosity_Data():
 
-    def __init__(self, year, season):
+    def __init__(self, year, season, explore):
+        self.explore = explore
         self.year = year
         self.season = season
         self.curiosity_data = []
 
         self.__retrieve_data()
         self.__process_data()
-        self.__explore_data()
+        
+        if self.explore == True:
+            self.__explore_data()
 
-
-    # Data processing function
-    def __retrieve_data(self):  
+    def __retrieve_data(self):  # Data retrieval from API
 
         #logging.info('Calling Curiosity')
-        self.curiosity_response = requests.get(f'{API_URL_CURIOSITY}')
+        self.curiosity_response = requests.get(f'{API_URL_CURIOSITY}') # API link contained in the .env file
         self.curiosity_response.raise_for_status()
         curiosity_JSON = json.loads(self.curiosity_response.text) # Loads as a dictionary with 2 key; description and soles
-        self.sol_data = curiosity_JSON['soles']
+        self.sol_data = curiosity_JSON['soles'] # The other dictionary entry is 'description' which isn't useful for the sake of out data intake and analysis
 
     def __process_data(self):
         
-        season_dict = {'Winter': {'first': '12-01', 'last': '02-28'}, 'Spring': {'first': '03-01', 'last': '05-31'}, 'Summer': {'first': '06-01', 'last': '08-31'}, 'Fall': {'first': '07-01', 'last': '11-30'}}
-        first_day_dt = datetime.date.fromisoformat(str(str(self.year) + '-' + season_dict[self.season]['first']))
+        season_dict = {'Winter': {'first': '12-01', 'last': '02-28'}, 'Spring': {'first': '03-01', 'last': '05-31'}, 'Summer': {'first': '06-01', 'last': '08-31'}, 'Fall': {'first': '07-01', 'last': '11-30'}} # Season dictionary with start and end dats
+        first_day_dt = datetime.date.fromisoformat(str(str(self.year) + '-' + season_dict[self.season]['first'])) # For data filtering
         last_day_dt = datetime.date.fromisoformat(str(str(self.year + 1) + '-' + season_dict[self.season]['last']) if self.season == 'Winter' else str(str(self.year) + '-' + season_dict[self.season]['last']))
 
         mars_record = collection.namedtuple('mars_record', 'earth_date, sol, season, min_temp, max_temp, ave_temp, atmo_opacity, pressure, sunrise, sunset, daylight')
-        ave_min = statistics.mean([int(sol['min_temp']) for sol in self.sol_data if sol['min_temp'] != '--'])
+        ave_min = statistics.mean([int(sol['min_temp']) for sol in self.sol_data if sol['min_temp'] != '--']) # To fill in missing data we're taking the average of the selected season
         ave_max = statistics.mean([int(sol['max_temp']) for sol in self.sol_data if sol['max_temp'] != '--'])
         ave_pressure = statistics.mean([int(sol['pressure']) for sol in self.sol_data if sol['pressure'] != '--'])
         
@@ -118,61 +119,110 @@ class Curiosity_Data():
             sunset = sol['sunset'].split(':') # Converting string to datetime.time object
             sunset_datetime = datetime.time(int(sunset[0]), int(sunset[1]))
             
-            dateTimeA = datetime.datetime.combine(datetime.date.today(), sunset_datetime)
-            dateTimeB = datetime.datetime.combine(datetime.date.today(), sunrise_datetime)
-            dateTimeDifference = dateTimeA - dateTimeB
-            daylight = dateTimeDifference.total_seconds() / 3600
+            daylight = (datetime.datetime.combine(datetime.date.today(), sunset_datetime) - datetime.datetime.combine(datetime.date.today(), sunrise_datetime)).total_seconds() / 3600 # Calculating daylight in hours
 
             if first_day_dt <= earth_date_datetime <= last_day_dt: # Filter by date/season
                 self.curiosity_data.append(mars_record(earth_date_datetime, int(sol['sol']), sol['season'], int(sol['min_temp']), int(sol['max_temp']), int((int(sol['min_temp'])+int(sol['max_temp']))/2), sol['atmo_opacity'], int(sol['pressure']), sunrise_datetime, sunset_datetime, daylight))
     
     def __explore_data(self):
-# ~~~~~~~~~~~~~~~~~~~~~~~~~ NEED TO FINISH ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         self.min_temps = [data.min_temp for data in self.curiosity_data]
         self.max_temps = [data.max_temp for data in self.curiosity_data]
         self.ave_temps = [data.ave_temp for data in self.curiosity_data]
-# ~~~~~~~~~~~~~~~~~~~~~~~~~ NEED TO FINISH ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        self.sol = [data.sol for data in self.curiosity_data]
+        seasons = list(set([data.season for data in self.curiosity_data]))
+        self.daylight_per_season = [statistics.mean([data.daylight for data in self.curiosity_data if data.season == seasons[i]]) for i in range(0, len(seasons))]
+
+
+        fig, axs = plt.subplots(1, 2)
+        ax1, ax2 = axs
+        ax1.plot(self.sol, self.max_temps, label='max')
+        ax1.plot(self.sol, self.ave_temps, label='ave')
+        ax1.plot(self.sol, self.min_temps, label='min')
+        ax1.set_title('Temperatures for the Seasons (C)')
+        ax1.set_xlabel('Sol (martian day)')
+        ax1.set_ylabel('Temperature (C)')
+
+
+        ax2.bar(seasons, self.daylight_per_season)
+        ax2.set_ylim([11,13]) # 11 to 13 hours becuase Mars current tilt (and Curiosity's location) makes for fairly consistent daylight hours across the year (https://www.jpl.nasa.gov/images/changes-in-tilt-of-mars-axis)
+        ax2.bar_label(ax2.bar(seasons, self.daylight_per_season, label='Average Daylight'))
+        ax2.set_xlabel('Season')
+        ax2.set_ylabel('Average Daylight (hours)')
+        ax2.set_title('Average Daylight per Season (hours)')
+
+        ax1.legend(loc='best')
+        ax2.legend(loc='best')
+        #plt.xticks(rotation=45)
+        plt.show()
 
 # Merged Data Sets
 class Root_Two_Report(): # All humans are vermin in the eyes of Morbo...
-    def __init__(self, earth_data, mars_data):
+    def __init__(self, earth_data, mars_data, export, plot):
         
-        earth_datetime = []
-        for date in earth_data.date_array:
-            earth_datetime.append(datetime.date.fromisoformat(str(date)))
+        earth_datetime = [datetime.date.fromisoformat(str(date)) for date in earth_data.date_array]
         
+        self.export = export
+        self.plot = plot
         self.earth_data = zip(earth_datetime, earth_data.min_array, earth_data.max_array)
         self.mars_data = mars_data
         self.earth_mars_data = collection.defaultdict(dict)
         self.__merge_data()
-        self.__export_data()
+
+        if self.export == True:
+            self.__export_data()
+        
+        if self.plot == True:
+            self.__plot_data()
 
     def __merge_data(self):
 
         for data in self.earth_data:
             self.earth_mars_data[data[0]]['earth_min'] = data[1]
             self.earth_mars_data[data[0]]['earth_max'] = data[2]
+            self.earth_mars_data[data[0]]['earth_avg'] = (data[1] + data[2])/2
 
         for data in self.mars_data.curiosity_data:
             self.earth_mars_data[data.earth_date]['mars_min'] = data.min_temp
             self.earth_mars_data[data.earth_date]['mars_max'] = data.max_temp
+            self.earth_mars_data[data.earth_date]['mars_avg'] = data.ave_temp
+
+        self.earth_dates = [key for key in self.earth_mars_data.keys()]
+        mars_avg_max = statistics.mean([int(data.max_temp) for data in self.mars_data.curiosity_data]) # Calculating an average to fill empty data in the earth_mars_data dictionary
+
+        self.earth_data = [self.earth_mars_data[date]['earth_min'] for date in self.earth_dates]
+        self.mars_data = []
+        for date in self.earth_dates:
+            try:
+                self.mars_data.append(self.earth_mars_data[date]['mars_max'])
+            except KeyError:
+                self.mars_data.append(mars_avg_max)
 
     def __export_data(self):
-        field_names = ['date', 'earth_min', 'earth_max', 'mars_min', 'mars_max']
+        field_names = ['date', 'earth_min', 'earth_max', 'earth_avg', 'mars_min', 'mars_max', 'mars_avg']
 
         with open('Root2Report.csv', 'w', newline='') as f:
             writer = csv.DictWriter(f, field_names)
             writer.writeheader()
-            #fields = sorted(earth_mars_data.values()[0])
             for key, value in sorted(self.earth_mars_data.items()):
                 row = {'date': key}
                 row.update(value)
                 writer.writerow(row)
 
+    def __plot_data(self):
+        # Need some ideas on this
 
-cData = Curiosity_Data(2017, 'Summer')
+        fig, ax1 = plt.subplots()
+        ax1.fill_between(self.earth_dates, self.earth_data, self.mars_data)
+        ax1.set_label('Temperature Difference Between Earth Minimums and Mars Maximums')
+        ax1.set_xlabel('Earth Date')
+        ax1.set_ylabel('Temperature (C)')
+        #fig.tight_layout()
+        plt.show()
+
+
+cData = Curiosity_Data(2020, 'Summer', False)
 test_data_pull = NOAA_Data(2017,'USW00003167','Summer')
 #for data in cData.curiosity_data:
     #print(data.min_temp)
 
-Root_Two_Report(test_data_pull, cData)
+Root_Two_Report(test_data_pull, cData, False, False)
