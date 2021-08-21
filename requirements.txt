@@ -1,0 +1,15 @@
+###### Requirements without Version Specifiers #######
+logging
+os
+csv
+requests
+argparse
+datetime
+json
+itertools
+statistics
+collection
+matplotlib.pyplot
+dotenv
+numpy
+unittest
