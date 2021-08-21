@@ -29,17 +29,16 @@ class NOAA_Data():
     def __build_API_Call(self):
         if self.season == 'Spring':
             #Spring start =>'-3-1' Spring_end=>'-5-31'
-            self.API_call = f'''https://www.ncdc.noaa.gov/cdo-web/api/v2/data?datasetid=GHCND&datatypeid=TMAX&datatypeid=TMIN&limit=1000&
-            units=metric&stationid=GHCND:{self.location}&startdate={self.year}-03-01&enddate={self.year}-05-31'''
+            self.API_call = f'''https://www.ncdc.noaa.gov/cdo-web/api/v2/data?datasetid=GHCND&datatypeid=TMAX&datatypeid=TMIN&limit=1000&units=metric&stationid=GHCND:{self.location}&startdate={self.year}-03-01&enddate={self.year}-05-31'''
         elif self.season == 'Summer':
             #Spring start =>'-6-1' Spring_end=>'-8-31'
-            self.API_call = f'''https://www.ncdc.noaa.gov/cdo-web/api/v2/data?datasetid=GHCND&datatypeid=TMAX&datatypeid=TMIN&limit=1000&units=standard&stationid=GHCND:{self.location}&startdate={self.year}-06-01&enddate={self.year}-08-31'''
+            self.API_call = f'''https://www.ncdc.noaa.gov/cdo-web/api/v2/data?datasetid=GHCND&datatypeid=TMAX&datatypeid=TMIN&limit=1000&units=metric&stationid=GHCND:{self.location}&startdate={self.year}-06-01&enddate={self.year}-08-31'''
         elif self.season == 'Fall':
             #Spring start =>'9-1' Spring_end=>'11-30'
-            self.API_call = f'''https://www.ncdc.noaa.gov/cdo-web/api/v2/data?datasetid=GHCND&datatypeid=TMAX&datatypeid=TMIN&limit=1000&units=standard&stationid=GHCND:{self.location}&startdate={self.year}-09-01&enddate={self.year}-11-30'''
+            self.API_call = f'''https://www.ncdc.noaa.gov/cdo-web/api/v2/data?datasetid=GHCND&datatypeid=TMAX&datatypeid=TMIN&limit=1000&units=metric&stationid=GHCND:{self.location}&startdate={self.year}-09-01&enddate={self.year}-11-30'''
         elif self.season == 'Winter':
             #Spring start =>'12-1' Spring_end=>'2-28'
-            self.API_call = f'''https://www.ncdc.noaa.gov/cdo-web/api/v2/data?datasetid=GHCND&datatypeid=TMAX&datatypeid=TMIN&limit=1000&units=standard&stationid=GHCND:{self.location}&startdate={self.year}-12-01&enddate={str(int(self.year)+1)}-02-28'''
+            self.API_call = f'''https://www.ncdc.noaa.gov/cdo-web/api/v2/data?datasetid=GHCND&datatypeid=TMAX&datatypeid=TMIN&limit=1000&units=metric&stationid=GHCND:{self.location}&startdate={self.year}-12-01&enddate={str(int(self.year)+1)}-02-28'''
         else:
             raise ValueError('Season not found, please check inputes.')
         self.r = requests.get(self.API_call,headers={'token':API_KEY_NOAA})
