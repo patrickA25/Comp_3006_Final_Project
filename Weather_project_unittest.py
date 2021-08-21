@@ -74,7 +74,49 @@ class TestNOAAAPI(unittest.TestCase):
         a1 = NOAA_Data(2019,"USW00013958","Summer",False)
         self.assertTrue(len(a1.output_date_array())>0)
 
+    class TestCuriosity(unittest.TestCase):
+    def test_init(self):
+        c1 = Curiosity_Data(2012, 'Summer', False) # Test lower limit of the API
+        self.assertTrue(len(c1.curiosity_data) > 0)
 
+        c2 = Curiosity_Data(2012, 'Spring', False)
+        self.assertFalse(len(c2.curiosity_data) > 0)
 
+        c3 = Curiosity_Data(2021, 'Summer', False) # Test upper limit of the API
+        self.assertTrue(len(c3.curiosity_data) > 0)
+
+        c4 = Curiosity_Data(2021, 'Winter', False)
+        self.assertFalse(len(c4.curiosity_data) > 0)
+
+        c3 = Curiosity_Data(2020, 'Fall', False) # Test Fall input
+        self.assertTrue(len(c3.curiosity_data) > 0)
+        
+    @unittest.expectedFailure
+    def test_init_season(self):
+        c1 = Curiosity_Data(2012, 'Autumn', False) # Testing an invalid season
+        self.assertIsInstance(c1)
+
+    @unittest.expectedFailure
+    def test_root2report_fail(self):
+        m1 = [1, 'a', 2.0] # Arbitrary Mars array
+        e1 = [datetime.date(2019, 12, 2), 1, 2, 3, 'a'] # Arbitary Earth array
+        m2 = Curiosity_Data(2020, 'Summer', False)
+        e2 = NOAA_Data(2020,'USW00003167','Summer')
+
+        # Invalid inputs
+        r1 = Root_Two_Report(e1, m1, False, False)
+        self.assertIsInstance(r1)
+
+        r2 = Root_Two_Report(e1, m2, False, False)
+        self.assertIsInstance(r2)
+
+        r3 = Root_Two_Report(e2, m1, False, False)
+        self.assertIsInstance(r3)
+
+        # Valid inputs, but invalid order (Mars, Earth) not (Earth, Mars)
+        r4 = Root_Two_Report(m2, e2, False, False)
+        self.assertIsInstance(r4)
+        
+        
 if __name__=='__main__':
     unittest.main()
