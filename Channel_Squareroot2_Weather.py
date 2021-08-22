@@ -23,6 +23,7 @@ class NOAA_Data():
         self.year = str(year)
         self.location = str(location)
         self.season = str(season)
+        self.explore = explore
         self.__build_API_Call()
         self.__extracting_data()
 
@@ -67,7 +68,14 @@ class NOAA_Data():
         plt.plot(self.date_array,self.avg_array,label ='Avg Temp')
         plt.legend()
         plt.show()
-
+    def output_min_array(self):
+        return self.min_array
+    def output_max_array(self):
+        return self.max_array
+    def api_return_value(self):
+        return self.r.status_code
+    def output_date_array(self):
+        return self.date_array
 # Mars-related classes
 class Curiosity_Data():
 

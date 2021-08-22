@@ -69,12 +69,11 @@ class TestNOAAAPI(unittest.TestCase):
     def test_weather_station_NY_Winter(self):
         a1 = NOAA_Data(2019,"USW00094789","Winter",False)
         self.assertTrue(len(a1.output_date_array())>0)
-
     def test_weather_station_TX_Summer(self):
         a1 = NOAA_Data(2019,"USW00013958","Summer",False)
         self.assertTrue(len(a1.output_date_array())>0)
 
-    class TestCuriosity(unittest.TestCase):
+class TestCuriosity(unittest.TestCase):
     def test_init(self):
         c1 = Curiosity_Data(2012, 'Summer', False) # Test lower limit of the API
         self.assertTrue(len(c1.curiosity_data) > 0)
