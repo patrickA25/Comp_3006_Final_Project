@@ -87,9 +87,9 @@ class TestCuriosity(unittest.TestCase):
         c4 = Curiosity_Data(2021, 'Winter', False)
         self.assertFalse(len(c4.curiosity_data) > 0)
 
-        c3 = Curiosity_Data(2020, 'Fall', False) # Test Fall input
-        self.assertTrue(len(c3.curiosity_data) > 0)
-        
+        c5 = Curiosity_Data(2020, 'Fall', False) # Test Fall input
+        self.assertTrue(len(c5.curiosity_data) > 0)
+
     @unittest.expectedFailure
     def test_init_season(self):
         c1 = Curiosity_Data(2012, 'Autumn', False) # Testing an invalid season
