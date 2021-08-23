@@ -215,16 +215,22 @@ class Root_Two_Report(): # All humans are vermin in the eyes of Morbo...
                 writer.writerow(row)
 
     def __plot_data(self):
-        # Need some ideas on this
-
-        fig, ax1 = plt.subplots()
+        
+        fig, (ax1, ax2) = plt.subplots()
         ax1.fill_between(self.earth_dates, self.earth_data, self.mars_data)
         ax1.set_label('Temperature Difference Between Earth Minimums and Mars Maximums')
         ax1.set_xlabel('Earth Date')
         ax1.set_ylabel('Temperature (C)')
-        #fig.tight_layout()
-        plt.show()
 
+        ax2 = fig.add_axes([0, 0, 1, 1])
+        box_data = [self.earth_data, self.mars_data]
+        ax2.boxplot(box_data)
+        ax2.set_label('Box and Whisker Plot for Earth and Mars Temperature Data')
+        ax1.set_xticklabel('Earth', 'Mars')
+        ax1.set_ylabel('Temperature (C)')
+
+        plt.show()
+        
 
 def main():    
     #adding command line arguments
