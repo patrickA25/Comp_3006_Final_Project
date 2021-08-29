@@ -63,11 +63,28 @@ class NOAA_Data():
         self.avg_array = np.add(self.min_array,self.max_array)/2
         
     def explor_graph(self):
-        plt.plot(self.date_array,self.min_array,label='Min Temp')
-        plt.plot(self.date_array,self.max_array,label='Max Temp')
-        plt.plot(self.date_array,self.avg_array,label ='Avg Temp')
-        plt.legend()
+
+        
+        fig, axs = plt.subplots(1, 2)
+        ax1, ax2 = axs
+        ax1.plot(self.date_array,self.max_array, label='max')
+        ax1.plot(self.date_array,self.min_array, label='min')
+        ax1.set_title('Temperatures for the Seasons (C)')
+        ax1.set_xlabel('Earth Day')
+        ax1.set_ylabel('Temperature (C)')
+
+
+        ax2.plot(self.date_array,self.avg_array,label ='Avg Temp')
+        ax2.set_xlabel('Temperatures for Day (C)')
+        ax2.set_ylabel('Temperatures for the Day')
+        ax2.set_title(' Average Temperatures Per Day (C)')
+
+        ax1.legend(loc='best')
+        ax2.legend(loc='best')
+        #plt.xticks(rotation=45)
         plt.show()
+
+        
     def output_min_array(self):
         return self.min_array
     def output_max_array(self):
@@ -76,6 +93,8 @@ class NOAA_Data():
         return self.r.status_code
     def output_date_array(self):
         return self.date_array
+    
+    
 # Mars-related classes
 class Curiosity_Data():
 
@@ -163,7 +182,7 @@ class Curiosity_Data():
 
 # Merged Data Sets
 class Root_Two_Report(): # All humans are vermin in the eyes of Morbo...
-    def __init__(self, earth_data, mars_data, export, plot):
+    def __init__(self, earth_data, mars_data, plot, export):
         
         earth_datetime = [datetime.date.fromisoformat(str(date)) for date in earth_data.date_array]
         
@@ -216,18 +235,21 @@ class Root_Two_Report(): # All humans are vermin in the eyes of Morbo...
 
     def __plot_data(self):
         
-        fig, (ax1, ax2) = plt.subplots()
+        fig, axs = plt.subplots(1, 2)
+        ax1, ax2 = axs
         ax1.fill_between(self.earth_dates, self.earth_data, self.mars_data)
-        ax1.set_label('Temperature Difference Between Earth Minimums and Mars Maximums')
+        ax1.set_title('Temperature Difference Between Earth Minimums and Mars Maximums')
         ax1.set_xlabel('Earth Date')
         ax1.set_ylabel('Temperature (C)')
 
-        ax2 = fig.add_axes([0, 0, 1, 1])
+
         box_data = [self.earth_data, self.mars_data]
         ax2.boxplot(box_data)
-        ax2.set_label('Box and Whisker Plot for Earth and Mars Temperature Data')
-        ax1.set_xticklabel('Earth', 'Mars')
-        ax1.set_ylabel('Temperature (C)')
+        ax2.set_title('Box and Whisker Plot for Earth and Mars Temperature Data')
+        ax2.set_xticklabels(['Earth', 'Mars'])
+        ax2.set_ylabel('Temperature (C)')
+        ax2.set_xlabel('Planet')
+
 
         plt.show()
         
@@ -239,18 +261,18 @@ def main():
                                     to secelct a Season, year and a city to compare data from. A full list is cities and years are given
                                     for each respective argument.''')
 
-    parser.add_argument("year",type = str, metavar = "<year>", help = "Please chose one of the following 2017,2018,2019,2020,2021",
-                        choices = ["2017","2018","2019","2020","2021"])
+    parser.add_argument("year",type = int, metavar = "<year>", help = "Please chose one of the following 2017,2018,2019,2020,2021",
+                        choices = [2017,2018,2019,2020])
 
     parser.add_argument('-c',dest = 'e_location',metavar = '<Earth City>',
                         type = str, default = "LA",
                         help ='''Please choise one of the following cities LA ,DN, NY, TX, FL.If a city is not selected default will be LA''',
-                        choices = ["LA","DN","NY","TX","FL"])
+                        choices = ["LA","TX","FL"])
 
     parser.add_argument('-s',dest = 'season',metavar = '<Earth Season>',
                         type = str, default = "Spring",
                         help = "Please chose one of the following seasons Spring, Summer, Fall Winter. If a sesason is not selected defualt is Spring",
-                        choices = ["Spring","Summer","Fall","Winter"])
+                        choices = ["Spring","Summer","Winter"])
     
     parser.add_argument('-e',dest= 'explore_graph',action='store_true',
                         help = "If you would like to see the exploratory graphs")
@@ -265,12 +287,6 @@ def run(args):
     if args.e_location == "LA":
         #GHCND:USW00003167
         city_value = 'USW00003167'
-    elif args.e_location == "DN":
-        #GHCND:USC00052223
-        city_value = "USC00052223"
-    elif args.e_location == "NY":
-        #GHCND:USW00094789
-        city_value = "USW00094789"
     elif args.e_location == "TX":
         #GHCND:USW00013958
         city_value = "USW00013958"
@@ -281,6 +297,7 @@ def run(args):
         raise ValueError('City value not valied, please look into this.')
 
     #Pulling in data section
+    print(args.season)
     earth_data = NOAA_Data(args.year,city_value,args.season,args.explore_graph)
     mars_data = Curiosity_Data(args.year,args.season,args.explore_graph)
     Root_Two_Report(earth_data,mars_data,args.explore_graph,args.write_csv)

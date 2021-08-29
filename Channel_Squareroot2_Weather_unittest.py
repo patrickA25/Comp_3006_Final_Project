@@ -41,14 +41,6 @@ class TestNOAAAPI(unittest.TestCase):
         a1 = NOAA_Data(2017,"USW00003167","Spring",False)
         self.assertEquals(a1.api_return_value(), 200)
     
-    def test_weather_station_DN(self):
-        a1 = NOAA_Data(2018,"USC00052223","Spring",False)
-        self.assertEquals(a1.api_return_value(), 200)
-    
-    def test_weather_station_NY(self):
-        a1 = NOAA_Data(2019,"USW00094789","Spring",False)
-        self.assertEquals(a1.api_return_value(), 200)
-
     def test_weather_station_TX(self):
         a1 = NOAA_Data(2019,"USW00013958","Spring",False)
         self.assertEquals(a1.api_return_value(), 200)
@@ -61,14 +53,8 @@ class TestNOAAAPI(unittest.TestCase):
     def test_weather_station_LA_Spring(self):
         a1 = NOAA_Data(2017,"USW00003167","Spring",False)
         self.assertTrue(len(a1.output_date_array())>0)
-    
-    def test_weather_station_DN_Fall(self):
-        a1 = NOAA_Data(2018,"USC00052223","Fall",False)
-        self.assertTrue(len(a1.output_date_array())>0)
-    
-    def test_weather_station_NY_Winter(self):
-        a1 = NOAA_Data(2019,"USW00094789","Winter",False)
-        self.assertTrue(len(a1.output_date_array())>0)
+
+        
     def test_weather_station_TX_Summer(self):
         a1 = NOAA_Data(2019,"USW00013958","Summer",False)
         self.assertTrue(len(a1.output_date_array())>0)
@@ -87,9 +73,9 @@ class TestCuriosity(unittest.TestCase):
         c4 = Curiosity_Data(2021, 'Winter', False)
         self.assertFalse(len(c4.curiosity_data) > 0)
 
-        c3 = Curiosity_Data(2020, 'Fall', False) # Test Fall input
-        self.assertTrue(len(c3.curiosity_data) > 0)
-        
+        c5 = Curiosity_Data(2020, 'Fall', False) # Test Fall input
+        self.assertTrue(len(c5.curiosity_data) > 0)
+
     @unittest.expectedFailure
     def test_init_season(self):
         c1 = Curiosity_Data(2012, 'Autumn', False) # Testing an invalid season
